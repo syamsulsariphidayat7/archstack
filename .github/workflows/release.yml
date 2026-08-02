@@ -21,7 +21,7 @@ jobs:
           go-version: '1.26'
       - name: Build
         run: |
-          GOOS=linux GOARCH=${{ matrix.goarch }} go build -o archstack-linux-${{ matrix.goarch }} .
+          GOOS=linux GOARCH=${{ matrix.goarch }} go build -ldflags "-X github.com/syamsulsariphidayat7/archstack/internal/cli.Version=${GITHUB_REF_NAME}" -o archstack-linux-${{ matrix.goarch }} .
       - name: Upload
         uses: softprops/action-gh-release@v2
         with:

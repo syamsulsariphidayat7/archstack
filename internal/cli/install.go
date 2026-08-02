@@ -10,30 +10,7 @@ import (
 )
 
 func listCmd() error {
-	tools := registry.AllTools()
-	fmt.Printf("%-10s %-8s %-14s %-10s %s\n", "NAMA", "SUMBER", "STATUS", "SERVICE", "DESKRIPSI")
-	fmt.Println(strings.Repeat("-", 70))
-	for _, tool := range tools {
-		installed := system.IsInstalled(tool.Binary, tool.Pkg)
-		status := "not installed"
-		if installed {
-			status = "installed"
-		}
-		svc := "-"
-		if tool.Service != "" {
-			state, _ := system.ServiceStatus(tool.Service)
-			switch state {
-			case system.ServiceRunning:
-				svc = "running"
-			case system.ServiceStopped:
-				svc = "stopped"
-			default:
-				svc = "-"
-			}
-		}
-		fmt.Printf("%-10s %-8s %-14s %-10s %s\n", tool.Name, tool.From, status, svc, tool.Desc)
-	}
-	return nil
+	return printStatusTable(registry.AllTools())
 }
 
 func installCmd(names []string) error {

@@ -96,6 +96,70 @@ var defaultTools = []Tool{
 			},
 		},
 	},
+	{
+		Name: "python", Pkg: "python", From: SourcePacman, Binary: "python3",
+		Desc: "Python programming language",
+	},
+	{
+		Name: "python-pip", Pkg: "python-pip", From: SourcePacman, Binary: "pip",
+		Desc: "Python package installer",
+	},
+	{
+		Name: "go", Pkg: "go", From: SourcePacman, Binary: "go",
+		Desc: "Go programming language",
+	},
+	{
+		Name: "rust", Pkg: "rust", From: SourcePacman, Binary: "rustc",
+		Desc: "Rust programming language",
+	},
+	{
+		Name: "deno", Pkg: "deno", From: SourcePacman, Binary: "deno",
+		Desc: "JavaScript and TypeScript runtime",
+	},
+	{
+		Name: "bun", Pkg: "bun", From: SourcePacman, Binary: "bun",
+		Desc: "Fast JavaScript runtime and toolkit",
+	},
+	{
+		Name: "java", Pkg: "jdk-openjdk", From: SourcePacman, Binary: "java",
+		Desc: "OpenJDK Java development kit",
+	},
+	{
+		Name: "sqlite", Pkg: "sqlite", From: SourcePacman, Binary: "sqlite3",
+		Desc: "SQLite embedded database",
+	},
+	{
+		Name: "certbot", Pkg: "certbot", From: SourcePacman, Binary: "certbot",
+		Desc: "Let's Encrypt SSL certificate tool",
+	},
+	{
+		Name: "memcached", Pkg: "memcached", From: SourcePacman, Binary: "memcached",
+		Service: "memcached", Desc: "Distributed memory object caching",
+	},
+	{
+		Name: "mongodb", Pkg: "mongodb-bin", From: SourceYay, Binary: "mongod",
+		Service: "mongodb", Desc: "MongoDB document database (AUR)",
+	},
+	{
+		Name: "rabbitmq", Pkg: "rabbitmq", From: SourcePacman, Binary: "rabbitmq-server",
+		Service: "rabbitmq", Desc: "AMQP message broker",
+	},
+	{
+		Name: "fail2ban", Pkg: "fail2ban", From: SourcePacman, Binary: "fail2ban-client",
+		Service: "fail2ban", Desc: "Brute force protection daemon",
+	},
+	{
+		Name: "ffmpeg", Pkg: "ffmpeg", From: SourcePacman, Binary: "ffmpeg",
+		Desc: "Audio and video processing toolkit",
+	},
+	{
+		Name: "imagemagick", Pkg: "imagemagick", From: SourcePacman, Binary: "convert",
+		Desc: "Image manipulation tool",
+	},
+	{
+		Name: "tmux", Pkg: "tmux", From: SourcePacman, Binary: "tmux",
+		Desc: "Terminal multiplexer",
+	},
 }
 
 func AllTools() []Tool {

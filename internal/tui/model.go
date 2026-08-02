@@ -83,6 +83,7 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.state = stateList
 			m.execErr = nil
 			m.tool = nil
+			m.refreshStates()
 		}
 		return m, nil
 	}
@@ -100,6 +101,9 @@ func (m Model) updateList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "q", "esc":
 		return m, tea.Quit
+	case "r":
+		m.list.states = snapshotStates(m.list.items)
+		return m, nil
 	case "enter":
 		tool := m.list.items[m.list.cursor]
 		m.tool = &tool
@@ -129,6 +133,10 @@ func (m Model) updateList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 	}
 	return m, nil
+}
+
+func (m *Model) refreshStates() {
+	m.list.states = snapshotStates(m.list.items)
 }
 
 func buildSubmenu(tool *registry.Tool) []string {

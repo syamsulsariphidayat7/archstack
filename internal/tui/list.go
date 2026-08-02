@@ -15,6 +15,7 @@ type listModel struct {
 	cursor   int
 	vp       viewport.Model
 	helpText string
+	states   map[string]toolState
 }
 
 func newListModel() listModel {
@@ -25,7 +26,8 @@ func newListModel() listModel {
 		items:    items,
 		cursor:   0,
 		vp:       vp,
-		helpText: "↑/↓ navigasi • Enter pilih • q/Esc keluar",
+		helpText: "↑/↓ navigasi • Enter pilih • r refresh • q/Esc keluar",
+		states:   snapshotStates(items),
 	}
 }
 
@@ -54,7 +56,7 @@ func (m listModel) View() string {
 	b.WriteString("\n")
 
 	for i, tool := range m.items {
-		installed := system.IsInstalled(tool.Binary, tool.Pkg)
+		st := m.states[tool.Name]
 
 		prefix := "  "
 		if i == m.cursor {
@@ -73,7 +75,7 @@ func (m listModel) View() string {
 		source := DimStyle.Render(string(tool.From))
 
 		var status string
-		if installed {
+		if st.installed {
 			status = InstalledStyle.Render("installed")
 		} else {
 			status = NotInstalledStyle.Render("not installed")
@@ -81,8 +83,7 @@ func (m listModel) View() string {
 
 		var svc string
 		if tool.Service != "" {
-			state, _ := system.ServiceStatus(tool.Service)
-			switch state {
+			switch st.svc {
 			case system.ServiceRunning:
 				svc = ServiceRunningStyle.Render("running")
 			case system.ServiceStopped:

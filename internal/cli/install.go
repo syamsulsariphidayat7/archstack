@@ -3,7 +3,6 @@ package cli
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/syamsulsariphidayat7/archstack/internal/registry"
 	"github.com/syamsulsariphidayat7/archstack/internal/system"
@@ -26,17 +25,6 @@ func installCmd(names []string) error {
 			fmt.Printf("[ok] %s sudah terinstal\n", name)
 			continue
 		}
-		if len(tool.Prompts) > 0 {
-			cached := registry.GetCachedAnswers(tool.Name)
-			answers, err := collectAnswers(tool, cached)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "[error] %s: %v\n", name, err)
-				hasError = true
-				continue
-			}
-			registry.SetCachedAnswers(tool.Name, answers)
-			printAnswers(tool, answers)
-		}
 		if err := installOne(tool); err != nil {
 			fmt.Fprintf(os.Stderr, "[error] %s: %v\n", name, err)
 			hasError = true
@@ -57,42 +45,4 @@ func installOne(tool *registry.Tool) error {
 		return system.InstallYay(tool.Pkg)
 	}
 	return nil
-}
-
-func collectAnswers(tool *registry.Tool, cached map[string]string) (map[string]string, error) {
-	answers := make(map[string]string)
-	fmt.Printf("\n=== Menginstal %s ===\n", tool.Name)
-	for _, p := range tool.Prompts {
-		fmt.Printf("%s ", p.Question)
-		defaultVal := p.Recommended
-		if cv, ok := cached[p.Key]; ok {
-			defaultVal = cv
-		}
-		switch p.Type {
-		case registry.PromptSelect:
-			fmt.Printf("[%s]: ", strings.Join(p.Options, "/"))
-			var input string
-			fmt.Scanln(&input)
-			if input == "" {
-				input = defaultVal
-			}
-			answers[p.Key] = input
-		case registry.PromptText:
-			fmt.Printf("(terakhir: %s): ", defaultVal)
-			var input string
-			fmt.Scanln(&input)
-			if input == "" {
-				input = defaultVal
-			}
-			answers[p.Key] = input
-		}
-	}
-	fmt.Println()
-	return answers, nil
-}
-
-func printAnswers(tool *registry.Tool, answers map[string]string) {
-	for _, p := range tool.Prompts {
-		fmt.Printf("  %s: %s\n", p.Question, answers[p.Key])
-	}
 }

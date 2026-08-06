@@ -11,7 +11,7 @@ CLI (Go) untuk kelola development tools di Arch Linux. TUI (bubbletea) + subcomm
 ## Struktur
 - `main.go` → entry, panggil `cli.Root`
 - `internal/cli/` — subcommand: root, install, uninstall, run, stop, status, search, version, upgrade
-- `internal/registry/` — `defaultTools` (data tool), `answers.go` (cache jawaban JSON di `~/.config/archstack/answers.json`)
+- `internal/registry/` — `defaultTools` (data tool)
 - `internal/system/` — pacman/yay/systemd wrapper
 - `internal/tui/` — bubbletea UI
 - `scripts/install.sh` — one-liner dari GitHub release

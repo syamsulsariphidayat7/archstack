@@ -46,14 +46,10 @@ Edit `internal/registry/registry.go`, tambah entri ke `defaultTools`:
     Name: "namatool", Pkg: "namapackage", From: SourcePacman,
     Binary: "namabinary", Service: "namaservice",
     Desc: "Deskripsi tool",
-    Prompts: []Prompt{
-        {Key: "version", Question: "Pilih versi", Type: PromptSelect,
-         Options: []string{"opsi1", "opsi2"}, Recommended: "opsi1"},
-    },
 },
 ```
 
-Tool tanpa Prompts (kosong) langsung install tanpa tanya.
+Semua tool langsung install tanpa tanya.
 
 ## Build Manual
 

@@ -15,7 +15,6 @@ type state int
 const (
 	stateList state = iota
 	stateSubmenu
-	statePrompts
 	stateConfirm
 	stateDone
 )
@@ -25,26 +24,21 @@ type actionDoneMsg struct {
 }
 
 type Model struct {
-	state   state
-	list    listModel
-	tool    *registry.Tool
-	answers map[string]string
+	state state
+	list  listModel
+	tool  *registry.Tool
 
 	submenuCursor int
 	submenuItems  []string
 
 	confirmMsg string
 	execErr    error
-	execMsg    string
-
-	promptModel *promptFlowModel
 }
 
 func NewModel() Model {
 	return Model{
-		state:   stateList,
-		list:    newListModel(),
-		answers: make(map[string]string),
+		state: stateList,
+		list:  newListModel(),
 	}
 }
 
@@ -61,7 +55,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		return m.handleKey(msg)
 	default:
-		return m.handleOther(msg)
+		return m, nil
 	}
 }
 
@@ -90,13 +84,6 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) handleOther(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.state == statePrompts {
-		return m.updatePrompts(msg)
-	}
-	return m, nil
-}
-
 func (m Model) updateList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "q", "esc":
@@ -114,15 +101,7 @@ func (m Model) updateList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.state = stateSubmenu
 			return m, nil
 		}
-		if len(tool.Prompts) > 0 {
-			m.answers = registry.GetCachedAnswers(tool.Name)
-			m.state = statePrompts
-			m.promptModel = nil
-			pm := initialPromptModel(tool.Prompts, 0, m.answers)
-			m.promptModel = &pm
-			return m, nil
-		}
-		return m, execInstall(m.tool, nil)
+		return m, execInstall(m.tool)
 	case "up", "k":
 		if m.list.cursor > 0 {
 			m.list.cursor--
@@ -188,30 +167,6 @@ func (m Model) updateSubmenu(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) updatePrompts(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.promptModel == nil {
-		return m, nil
-	}
-
-	pm, cmd := m.promptModel.Update(msg)
-	var ok bool
-	m.promptModel, ok = pm.(*promptFlowModel)
-	if !ok {
-		return m, nil
-	}
-
-	if m.promptModel.current >= len(m.promptModel.prompts) {
-		answers := m.promptModel.answers
-		for k, v := range answers {
-			m.answers[k] = v
-		}
-		registry.SetCachedAnswers(m.tool.Name, answers)
-		return m, execInstall(m.tool, answers)
-	}
-
-	return m, cmd
-}
-
 func (m Model) updateConfirm(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "y", "Y":
@@ -223,7 +178,7 @@ func (m Model) updateConfirm(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func execInstall(tool *registry.Tool, answers map[string]string) tea.Cmd {
+func execInstall(tool *registry.Tool) tea.Cmd {
 	var cmd *exec.Cmd
 	switch tool.From {
 	case registry.SourcePacman:
@@ -268,11 +223,6 @@ func (m Model) View() string {
 		return AppStyle.Render(m.list.View())
 	case stateSubmenu:
 		return m.renderSubmenu()
-	case statePrompts:
-		if m.promptModel != nil {
-			return m.promptModel.View()
-		}
-		return AppStyle.Render("Memuat pertanyaan...")
 	case stateConfirm:
 		return AppStyle.Render(m.renderConfirm())
 	case stateDone:

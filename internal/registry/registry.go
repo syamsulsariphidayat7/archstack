@@ -7,21 +7,6 @@ const (
 	SourceYay    SourceType = "yay"
 )
 
-type PromptType string
-
-const (
-	PromptSelect PromptType = "select"
-	PromptText   PromptType = "text"
-)
-
-type Prompt struct {
-	Key         string
-	Question    string
-	Type        PromptType
-	Options     []string
-	Recommended string
-}
-
 type Tool struct {
 	Name    string
 	Pkg     string
@@ -29,7 +14,6 @@ type Tool struct {
 	Binary  string
 	Service string
 	Desc    string
-	Prompts []Prompt
 }
 
 var defaultTools = []Tool{
@@ -80,21 +64,6 @@ var defaultTools = []Tool{
 	{
 		Name: "nginx", Pkg: "nginx", From: SourcePacman, Binary: "nginx",
 		Service: "nginx", Desc: "Nginx web server",
-		Prompts: []Prompt{
-			{
-				Key:      "version",
-				Question: "Pilih versi nginx",
-				Type:     PromptSelect,
-				Options:  []string{"stable (repo resmi pacman)", "mainline (AUR nginx-mainline)"},
-				Recommended: "stable (repo resmi pacman)",
-			},
-			{
-				Key:         "project_root",
-				Question:    "Root project (kosongkan kalau gak perlu)",
-				Type:        PromptText,
-				Recommended: "/srv/http/<nama-project>",
-			},
-		},
 	},
 	{
 		Name: "python", Pkg: "python", From: SourcePacman, Binary: "python3",

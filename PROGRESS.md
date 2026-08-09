@@ -1,7 +1,7 @@
 # PROGRESS.md — ArchStack
 
 ## Fase Proyek
-Development (fitur iterasi) — release v0.3.0 sudah rilis, menuju v0.4.0 (unit test + CI)
+Development (fitur iterasi) — release v0.3.0 sudah rilis, menuju v0.4.0
 
 ## Status Terakhir
 - Release v0.1.0: initial CLI (list/install/uninstall/run + TUI + 12 tool)
@@ -10,10 +10,15 @@ Development (fitur iterasi) — release v0.3.0 sudah rilis, menuju v0.4.0 (unit 
 - `install.sh` one-liner divalidasi: pola nama asset (`archstack-linux-$GOARCH`) cocok dengan asset release v0.2.0.
 - Sesion ini:
   - **Prompt nginx dihapus** (keputusan user: "nginx sama dengan yang lain aja") → `install nginx` dan TUI sekarang langsung install tanpa tanya.
-  - **Cleanup dead code machinery prompt/answers**: hapus `internal/registry/answers.go`, `internal/tui/prompt.go`, tipe `Prompt`/`PromptType` + field `Prompts` di registry, `collectAnswers`/`printAnswers` di `install.go`, serta `statePrompts`/`answers`/`promptModel`/`updatePrompts` di TUI. Semua tool kini tanpa prompt. File `~/.config/archstack/answers.json` di mesin user jadi tidak terpakai (aman dihapus manual).
+  - **Cleanup dead code machinery prompt/answers**: hapus `internal/registry/answers.go`, `internal/tui/prompt.go`, tipe `Prompt`/`PromptType` + field `Prompts` di registry, `collectAnswers`/`printAnswers` di `install.go`, serta `statePrompts`/`answers`/`promptModel`/`updatePrompts` di TUI. Semua tool kini tanpa prompt.
+  - **Rilis v0.3.0 + update binary terinstal**: tag v0.3.0 terpush, release + asset live, `/usr/local/bin/archstack` terverifikasi v0.3.0 (byte-identik dengan asset release).
+  - **Unit test + CI**: tambah test untuk registry/upgrade/search/padRight (murni, tanpa sudo/pacman/systemctl/network) + workflow `.github/workflows/ci.yml` (gofmt/vet/test/build di push/PR). Refactor kecil: ekstrak `isUpToDate` (upgrade.go) dan `searchTools` (search.go) agar testable.
 
 ## Langkah Selanjutnya
-- Backup (opsional): unit test + test jalan di CI (belum ada test sama sekali; `go test ./...` saat ini kosong)
+- Semua item prioritas selesai. Ide berikutnya (opsional):
+  - Integration test end-to-end (mis. mock `exec.Command` untuk install/status)
+  - Changelog otomatis dari release notes GitHub
+  - Dukungan distro lain (apt/dnf) — perlu refactor `internal/system/`
 
 ## Blocker/Catatan
 - `sudo` butuh password (no tty) → operasi root dijalankan user manual

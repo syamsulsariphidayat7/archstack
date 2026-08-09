@@ -22,7 +22,7 @@ func upgradeCmd() error {
 	if err != nil {
 		return fmt.Errorf("[error] Gagal cek rilis terbaru: %w", err)
 	}
-	if strings.TrimPrefix(latest, "v") == strings.TrimPrefix(Version, "v") {
+	if isUpToDate(latest, Version) {
 		fmt.Printf("[ok] Sudah versi terbaru: %s\n", Version)
 		return nil
 	}
@@ -89,6 +89,10 @@ func fetchLatestTag() (string, error) {
 		return "", fmt.Errorf("tag_name kosong")
 	}
 	return rel.TagName, nil
+}
+
+func isUpToDate(latest, current string) bool {
+	return strings.TrimPrefix(latest, "v") == strings.TrimPrefix(current, "v")
 }
 
 func goarch() (string, error) {

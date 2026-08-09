@@ -3,10 +3,11 @@
 CLI (Go) untuk kelola development tools di Arch Linux. TUI (bubbletea) + subcommand.
 
 ## Perintah
+- `gofmt -l .` — cek format (harus kosong)
 - `go build ./...` — build
 - `go vet ./...` — lint
-- `go test ./...` — test (belum ada)
-- `go build -ldflags "-X github.com/syamsulsariphidayat7/archstack/internal/cli.Version=v0.1.0" -o archstack .` — build dengan versi
+- `go test ./...` — unit test
+- `go build -ldflags "-X github.com/syamsulsariphidayat7/archstack/internal/cli.Version=v0.3.0" -o archstack .` — build dengan versi
 
 ## Struktur
 - `main.go` → entry, panggil `cli.Root`
@@ -15,11 +16,13 @@ CLI (Go) untuk kelola development tools di Arch Linux. TUI (bubbletea) + subcomm
 - `internal/system/` — pacman/yay/systemd wrapper
 - `internal/tui/` — bubbletea UI
 - `scripts/install.sh` — one-liner dari GitHub release
+- `.github/workflows/ci.yml` — gofmt/vet/test/build otomatis di setiap push/PR
 - `.github/workflows/release.yml` — build amd64/arm64 + upload saat tag `v*`
 
 ## Konvensi
 - Tambah tool: edit `defaultTools` di `internal/registry/registry.go`
 - Tool dengan `Service` otomatis dapat aksi start/stop di TUI
+- Unit test: file `*_test.go` di package yang sama; test harus murni (tidak memanggil sudo/pacman/systemctl/network) — ekstrak helper bila perlu
 - Pesan output CLI pakai prefix `[ok]`/`[install]`/`[run]`/`[done]`/`[error]`/`[info]`
 - Bahasa output: Indonesia
 

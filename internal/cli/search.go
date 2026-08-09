@@ -8,12 +8,7 @@ import (
 	"github.com/syamsulsariphidayat7/archstack/internal/system"
 )
 
-func searchCmd(query string) error {
-	q := strings.ToLower(strings.TrimSpace(query))
-	if q == "" {
-		return fmt.Errorf("[error] Gunakan: archstack search <query>")
-	}
-
+func searchTools(q string) []registry.Tool {
 	var found []registry.Tool
 	for _, tool := range registry.AllTools() {
 		hay := strings.ToLower(tool.Name + " " + tool.Pkg + " " + tool.Desc)
@@ -21,6 +16,16 @@ func searchCmd(query string) error {
 			found = append(found, tool)
 		}
 	}
+	return found
+}
+
+func searchCmd(query string) error {
+	q := strings.ToLower(strings.TrimSpace(query))
+	if q == "" {
+		return fmt.Errorf("[error] Gunakan: archstack search <query>")
+	}
+
+	found := searchTools(q)
 
 	if len(found) == 0 {
 		fmt.Printf("[info] Tidak ada tool yang cocok dengan '%s'\n", query)

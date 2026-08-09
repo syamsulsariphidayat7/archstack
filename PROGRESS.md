@@ -1,11 +1,12 @@
 # PROGRESS.md — ArchStack
 
 ## Fase Proyek
-Development (fitur iterasi) — release v0.2.0 sudah rilis, menuju v0.3.0
+Development (fitur iterasi) — release v0.3.0 sudah rilis, menuju v0.4.0 (unit test + CI)
 
 ## Status Terakhir
 - Release v0.1.0: initial CLI (list/install/uninstall/run + TUI + 12 tool)
 - Release v0.2.0 (2 Agu 2026): + command `version`, `status [tool]`, `search <query>`, `stop <tool>`, `upgrade`; registry 28 tool; version via ldflags; fix TUI berat (snapshot state, ganti query pacman per frame). Tag terpush, release + asset `amd64`/`arm64` sudah live di GitHub.
+- Release v0.3.0: cleanup dead code machinery prompt/answers — nginx kini langsung install tanpa tanya (semua tool tanpa prompt), -521 baris. Tag terpush, release + asset `amd64`/`arm64` sudah live di GitHub.
 - `install.sh` one-liner divalidasi: pola nama asset (`archstack-linux-$GOARCH`) cocok dengan asset release v0.2.0.
 - Sesion ini:
   - **Prompt nginx dihapus** (keputusan user: "nginx sama dengan yang lain aja") → `install nginx` dan TUI sekarang langsung install tanpa tanya.

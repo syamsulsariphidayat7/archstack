@@ -34,8 +34,9 @@ func statusCmd(names []string) error {
 }
 
 func printStatusTable(tools []registry.Tool) error {
-	fmt.Printf("%-10s %-8s %-14s %-10s %s\n", "NAMA", "SUMBER", "STATUS", "SERVICE", "DESKRIPSI")
-	fmt.Println(strings.Repeat("-", 70))
+	versions := system.ToolVersionStrings(tools)
+	fmt.Printf("%-10s %-8s %-14s %-10s %-12s %s\n", "NAMA", "SUMBER", "STATUS", "SERVICE", "VERSI", "DESKRIPSI")
+	fmt.Println(strings.Repeat("-", 84))
 	for _, tool := range tools {
 		installed := system.IsInstalled(tool.Binary, tool.Pkg)
 		status := "not installed"
@@ -54,7 +55,11 @@ func printStatusTable(tools []registry.Tool) error {
 				svc = "-"
 			}
 		}
-		fmt.Printf("%-10s %-8s %-14s %-10s %s\n", tool.Name, tool.From, status, svc, tool.Desc)
+		ver := "-"
+		if v, ok := versions[tool.Name]; ok && v != "" {
+			ver = v
+		}
+		fmt.Printf("%-10s %-8s %-14s %-10s %-12s %s\n", tool.Name, tool.From, status, svc, ver, tool.Desc)
 	}
 	return nil
 }

@@ -2,7 +2,6 @@ package tui
 
 import (
 	"os/exec"
-	"strings"
 
 	"github.com/syamsulsariphidayat7/archstack/internal/registry"
 	"github.com/syamsulsariphidayat7/archstack/internal/system"
@@ -33,14 +32,8 @@ func snapshotStates(tools []registry.Tool) map[string]toolState {
 
 func installedPkgs() map[string]bool {
 	set := make(map[string]bool)
-	out, err := exec.Command("pacman", "-Qq").Output()
-	if err != nil {
-		return set
-	}
-	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
-		if line != "" {
-			set[line] = true
-		}
+	for pkg := range system.InstalledVersions() {
+		set[pkg] = true
 	}
 	return set
 }

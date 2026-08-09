@@ -13,6 +13,8 @@ Development (fitur iterasi) — release v0.3.0 sudah rilis, menuju v0.4.0
   - **Cleanup dead code machinery prompt/answers**: hapus `internal/registry/answers.go`, `internal/tui/prompt.go`, tipe `Prompt`/`PromptType` + field `Prompts` di registry, `collectAnswers`/`printAnswers` di `install.go`, serta `statePrompts`/`answers`/`promptModel`/`updatePrompts` di TUI. Semua tool kini tanpa prompt.
   - **Rilis v0.3.0 + update binary terinstal**: tag v0.3.0 terpush, release + asset live, `/usr/local/bin/archstack` terverifikasi v0.3.0 (byte-identik dengan asset release).
   - **Unit test + CI**: tambah test untuk registry/upgrade/search/padRight (murni, tanpa sudo/pacman/systemctl/network) + workflow `.github/workflows/ci.yml` (gofmt/vet/test/build di push/PR). Refactor kecil: ekstrak `isUpToDate` (upgrade.go) dan `searchTools` (search.go) agar testable.
+  - **Rekomendasi versi saat install** (dinamis): `AvailableVersion` query `pacman -Si`/`yay -Si`, CLI install & TUI menampilkan "versi rekomendasi" sebelum install. Helper murni `parseVersion` di-cover unit test.
+  - **Kolom VERSI di status/list**: `pacman -Q` (versi terinstall, 1 call) + `pacman -Sl` (versi repo, 1 call) via `ToolVersionStrings`; terinstall → tampil versi terinstall, selain itu versi rekomendasi. `installedPkgs` di TUI pakai `InstalledVersions` (hemat 1 subprocess).
 
 ## Langkah Selanjutnya
 - Semua item prioritas selesai. Ide berikutnya (opsional):

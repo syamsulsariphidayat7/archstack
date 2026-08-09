@@ -37,7 +37,12 @@ func installCmd(names []string) error {
 }
 
 func installOne(tool *registry.Tool) error {
-	fmt.Printf("[install] Menginstal %s...\n", tool.Name)
+	ver := system.AvailableVersion(tool.Pkg, tool.From == registry.SourceYay)
+	if ver != "" {
+		fmt.Printf("[install] Menginstal %s — versi rekomendasi: %s...\n", tool.Name, ver)
+	} else {
+		fmt.Printf("[install] Menginstal %s...\n", tool.Name)
+	}
 	switch tool.From {
 	case registry.SourcePacman:
 		return system.InstallPacman(tool.Pkg)

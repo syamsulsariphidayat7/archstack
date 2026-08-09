@@ -23,6 +23,10 @@ type actionDoneMsg struct {
 	err error
 }
 
+type versionNoteMsg struct {
+	text string
+}
+
 type Model struct {
 	state state
 	list  listModel
@@ -51,6 +55,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case actionDoneMsg:
 		m.execErr = msg.err
 		m.state = stateDone
+		return m, nil
+	case versionNoteMsg:
+		if msg.text != "" {
+			return m, tea.Println(msg.text)
+		}
 		return m, nil
 	case tea.KeyMsg:
 		return m.handleKey(msg)
@@ -90,6 +99,7 @@ func (m Model) updateList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case "r":
 		m.list.states = snapshotStates(m.list.items)
+		m.list.versions = system.ToolVersionStrings(m.list.items)
 		return m, nil
 	case "enter":
 		tool := m.list.items[m.list.cursor]
@@ -101,7 +111,7 @@ func (m Model) updateList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.state = stateSubmenu
 			return m, nil
 		}
-		return m, execInstall(m.tool)
+		return m, installCmd(m.tool)
 	case "up", "k":
 		if m.list.cursor > 0 {
 			m.list.cursor--
@@ -116,6 +126,7 @@ func (m Model) updateList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 func (m *Model) refreshStates() {
 	m.list.states = snapshotStates(m.list.items)
+	m.list.versions = system.ToolVersionStrings(m.list.items)
 }
 
 func buildSubmenu(tool *registry.Tool) []string {
@@ -176,6 +187,24 @@ func (m Model) updateConfirm(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	return m, nil
+}
+
+// installCmd menampilkan versi rekomendasi (jika ada) sebelum menjalankan install,
+// tanpa memblokir event loop TUI.
+func installCmd(tool *registry.Tool) tea.Cmd {
+	if tool == nil {
+		return nil
+	}
+	return tea.Sequence(
+		func() tea.Msg {
+			ver := system.AvailableVersion(tool.Pkg, tool.From == registry.SourceYay)
+			if ver == "" {
+				return versionNoteMsg{}
+			}
+			return versionNoteMsg{text: fmt.Sprintf("[install] Menginstal %s — versi rekomendasi: %s...", tool.Name, ver)}
+		},
+		execInstall(tool),
+	)
 }
 
 func execInstall(tool *registry.Tool) tea.Cmd {

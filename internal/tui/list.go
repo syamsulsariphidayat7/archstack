@@ -16,6 +16,7 @@ type listModel struct {
 	vp       viewport.Model
 	helpText string
 	states   map[string]toolState
+	versions map[string]string
 }
 
 func newListModel() listModel {
@@ -28,6 +29,7 @@ func newListModel() listModel {
 		vp:       vp,
 		helpText: "↑/↓ navigasi • Enter pilih • r refresh • q/Esc keluar",
 		states:   snapshotStates(items),
+		versions: system.ToolVersionStrings(items),
 	}
 }
 
@@ -52,7 +54,7 @@ func (m listModel) View() string {
 	var b strings.Builder
 	b.WriteString(TitleStyle.Render("📦 ArchStack — Development Tools Manager"))
 	b.WriteString("\n")
-	b.WriteString(HeaderStyle.Render("  NAMA" + padRight("", 7) + "SUMBER" + padRight("", 4) + "STATUS" + padRight("", 10) + "SERVICE" + padRight("", 8) + "DESKRIPSI"))
+	b.WriteString(HeaderStyle.Render("  NAMA" + padRight("", 7) + "SUMBER" + padRight("", 4) + "STATUS" + padRight("", 10) + "SERVICE" + padRight("", 8) + "VERSI" + padRight("", 12) + "DESKRIPSI"))
 	b.WriteString("\n")
 
 	for i, tool := range m.items {
@@ -97,10 +99,16 @@ func (m listModel) View() string {
 
 		desc := DimStyle.Render(tool.Desc)
 
+		ver := "-"
+		if v, ok := m.versions[tool.Name]; ok && v != "" {
+			ver = v
+		}
+
 		b.WriteString(prefix + name + padRight("", 12-len(tool.Name)) +
 			source + padRight("", 10) +
 			status + padRight("", 14) +
 			svc + padRight("", 10) +
+			ver + padRight("", 12) +
 			desc + "\n")
 	}
 

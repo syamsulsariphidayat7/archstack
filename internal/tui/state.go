@@ -23,7 +23,7 @@ func snapshotStates(tools []registry.Tool) map[string]toolState {
 			}
 		}
 		if t.Service != "" {
-			st.svc, _ = system.ServiceStatus(t.Service)
+			st.svc, _ = system.ServiceStatusFor(&t)
 		}
 		states[t.Name] = st
 	}

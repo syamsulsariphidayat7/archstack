@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/syamsulsariphidayat7/archstack/internal/registry"
 	"github.com/syamsulsariphidayat7/archstack/internal/system"
@@ -21,12 +22,12 @@ func installCmd(names []string) error {
 			hasError = true
 			continue
 		}
-		if system.IsInstalled(tool.Binary, tool.Pkg) {
+		if !tool.IsServiceOnly() && system.IsInstalled(tool.Binary, tool.Pkg) {
 			fmt.Printf("[ok] %s sudah terinstal\n", name)
 			continue
 		}
 		if err := installOne(tool); err != nil {
-			fmt.Fprintf(os.Stderr, "[error] %s: %v\n", name, err)
+			printInstallError(name, err)
 			hasError = true
 		}
 	}
@@ -36,7 +37,21 @@ func installCmd(names []string) error {
 	return nil
 }
 
+// printInstallError menghindari prefix ganda untuk error yang sudah memakai
+// format "[error] ..." (mis. petunjuk multi-baris dari modul service).
+func printInstallError(name string, err error) {
+	msg := err.Error()
+	if strings.HasPrefix(msg, "[error]") {
+		fmt.Fprintln(os.Stderr, msg)
+		return
+	}
+	fmt.Fprintf(os.Stderr, "[error] %s: %v\n", name, err)
+}
+
 func installOne(tool *registry.Tool) error {
+	if tool.IsServiceOnly() {
+		return installServiceOnly(tool)
+	}
 	ver := system.AvailableVersion(tool.Pkg, tool.From == registry.SourceYay)
 	if ver != "" {
 		fmt.Printf("[install] Menginstal %s — versi rekomendasi: %s...\n", tool.Name, ver)

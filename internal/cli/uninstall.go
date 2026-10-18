@@ -17,6 +17,13 @@ func uninstallCmd(names []string) error {
 			hasError = true
 			continue
 		}
+		if tool.IsServiceOnly() {
+			if err := uninstallServiceOnly(tool); err != nil {
+				fmt.Fprintf(os.Stderr, "%v\n", err)
+				hasError = true
+			}
+			continue
+		}
 		if !system.IsInstalled(tool.Binary, tool.Pkg) {
 			fmt.Printf("[ok] %s sudah tidak terinstal\n", name)
 			continue

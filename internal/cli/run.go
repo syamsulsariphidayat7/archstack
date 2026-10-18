@@ -14,13 +14,13 @@ func runCmd(name string) error {
 	}
 
 	if tool.Service != "" {
-		state, _ := system.ServiceStatus(tool.Service)
+		state, _ := system.ServiceStatusFor(tool)
 		if state == system.ServiceRunning {
 			fmt.Printf("[ok] Service %s sudah berjalan\n", tool.Service)
 			return nil
 		}
 		fmt.Printf("[run] Menjalankan service %s...\n", tool.Service)
-		if err := system.StartService(tool.Service); err != nil {
+		if err := system.StartServiceFor(tool); err != nil {
 			return fmt.Errorf("[error] Gagal start service %s: %w", tool.Service, err)
 		}
 		fmt.Printf("[done] Service %s berjalan\n", tool.Service)

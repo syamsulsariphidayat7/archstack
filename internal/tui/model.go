@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -105,6 +106,9 @@ func (m Model) updateList(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		tool := m.list.items[m.list.cursor]
 		m.tool = &tool
 		installed := system.IsInstalled(tool.Binary, tool.Pkg)
+		if tool.IsServiceOnly() && !system.UserUnitExists(tool.Service) {
+			installed = false // service belum terdaftar: tawarkan install
+		}
 		if installed {
 			m.submenuItems = buildSubmenu(&tool)
 			m.submenuCursor = 0
@@ -132,7 +136,7 @@ func (m *Model) refreshStates() {
 func buildSubmenu(tool *registry.Tool) []string {
 	items := []string{"Uninstall " + tool.Name}
 	if tool.Service != "" {
-		state, _ := system.ServiceStatus(tool.Service)
+		state, _ := system.ServiceStatusFor(tool)
 		switch state {
 		case system.ServiceRunning:
 			items = append(items, "Stop service "+tool.Service)
@@ -208,6 +212,9 @@ func installCmd(tool *registry.Tool) tea.Cmd {
 }
 
 func execInstall(tool *registry.Tool) tea.Cmd {
+	if tool.IsServiceOnly() {
+		return execSelf("install", tool.Name)
+	}
 	var cmd *exec.Cmd
 	switch tool.From {
 	case registry.SourcePacman:
@@ -221,10 +228,12 @@ func execInstall(tool *registry.Tool) tea.Cmd {
 }
 
 func execUninstall(tool *registry.Tool) tea.Cmd {
-	state, _ := system.ServiceStatus(tool.Service)
+	if tool.IsServiceOnly() {
+		return execSelf("uninstall", tool.Name)
+	}
+	state, _ := system.ServiceStatusFor(tool)
 	if tool.Service != "" && state == system.ServiceRunning {
-		stopCmd := exec.Command("sudo", "systemctl", "stop", tool.Service)
-		_ = stopCmd.Run()
+		_ = system.StopServiceCommand(tool).Run()
 	}
 	cmd := exec.Command("sudo", "pacman", "-Rns", "--noconfirm", tool.Pkg)
 	return tea.ExecProcess(cmd, func(err error) tea.Msg {
@@ -233,15 +242,28 @@ func execUninstall(tool *registry.Tool) tea.Cmd {
 }
 
 func execRun(tool *registry.Tool) tea.Cmd {
-	cmd := exec.Command("sudo", "systemctl", "enable", "--now", tool.Service)
-	return tea.ExecProcess(cmd, func(err error) tea.Msg {
+	return tea.ExecProcess(system.StartServiceCommand(tool), func(err error) tea.Msg {
 		return actionDoneMsg{err: err}
 	})
 }
 
 func execStop(tool *registry.Tool) tea.Cmd {
-	cmd := exec.Command("sudo", "systemctl", "stop", tool.Service)
-	return tea.ExecProcess(cmd, func(err error) tea.Msg {
+	return tea.ExecProcess(system.StopServiceCommand(tool), func(err error) tea.Msg {
+		return actionDoneMsg{err: err}
+	})
+}
+
+// execSelf menjalankan ulang binary archstack dengan subcommand tertentu,
+// supaya logika service-only (tulis unit, linger, verifikasi) tidak
+// diduplikasi di TUI.
+func execSelf(args ...string) tea.Cmd {
+	exe, err := os.Executable()
+	if err != nil {
+		return func() tea.Msg {
+			return actionDoneMsg{err: fmt.Errorf("tidak bisa menemukan binary archstack: %w", err)}
+		}
+	}
+	return tea.ExecProcess(exec.Command(exe, args...), func(err error) tea.Msg {
 		return actionDoneMsg{err: err}
 	})
 }

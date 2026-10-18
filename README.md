@@ -33,6 +33,8 @@ archstack install php node redis  # Instal beberapa tool sekaligus
 archstack uninstall nginx         # Hapus tool
 archstack run postgres            # Jalankan service tool
 archstack stop postgres           # Hentikan service tool
+archstack install omniroute       # Daftarkan autostart service (binary sudah ada)
+archstack status omniroute        # Detail service + linger + health
 archstack upgrade                 # Perbarui archstack
 archstack version                 # Tampilkan versi
 ```
@@ -50,6 +52,30 @@ Edit `internal/registry/registry.go`, tambah entri ke `defaultTools`:
 ```
 
 Semua tool langsung install tanpa tanya.
+
+### Tool service-only
+
+Untuk tool yang binary-nya dipasang di luar archstack (npm global, dsb) dan
+hanya perlu autostart service, gunakan `SourceServiceOnly` + user service:
+
+```go
+{
+    Name: "omniroute", From: SourceServiceOnly, Binary: "omniroute",
+    Service: "omniroute", ServiceScope: ServiceUser, Linger: true,
+    PidFile:   "~/.omniroute/server/.pid",
+    HealthURL: "http://127.0.0.1:20128/api/health",
+    Desc:      "OmniRoute AI proxy router — autostart service (binary manual)",
+},
+```
+
+- `install` → tulis `~/.config/systemd/user/<service>.service` (backup bila sudah
+  ada dan isinya beda), `enable --now`, `enable-linger`, lalu health check.
+- `uninstall` → `disable --now` + hapus unit; **binary dan data tidak disentuh**.
+- `PidFile` mendeteksi instance manual yang masih memakai port yang sama;
+  install ditolak dengan instruksi `<binary> stop`.
+- Binary dicari di `PATH` lalu `~/.npm-global/bin`, `~/.local/bin`, `~/.bun/bin`,
+  `~/.deno/bin`, `/usr/local/bin`.
+- Unit selalu foreground (`Type=notify`) — jangan pakai mode daemon internal.
 
 ## Build Manual
 

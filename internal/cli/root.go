@@ -77,9 +77,11 @@ Penggunaan:
 Contoh:
   archstack install nginx
   archstack install php node postgres
+  archstack install omniroute   # daftarkan autostart service (binary sudah terpasang)
   archstack uninstall nginx
   archstack run postgres
   archstack stop postgres
   archstack status nginx
+  archstack status omniroute
   archstack search database`)
 }

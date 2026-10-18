@@ -69,6 +69,9 @@ func ToolVersionStrings(tools []registry.Tool) map[string]string {
 	available := AvailableVersions()
 	out := make(map[string]string, len(tools))
 	for _, t := range tools {
+		if t.Pkg == "" {
+			continue
+		}
 		if v := installed[t.Pkg]; v != "" {
 			out[t.Name] = v
 			continue

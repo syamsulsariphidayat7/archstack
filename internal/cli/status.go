@@ -26,6 +26,11 @@ func statusCmd(names []string) error {
 	}
 	if len(tools) > 0 {
 		printStatusTable(tools)
+		for _, tool := range tools {
+			if tool.IsServiceOnly() {
+				printServiceDetail(&tool)
+			}
+		}
 	}
 	if hasError {
 		return fmt.Errorf("beberapa tool tidak dikenal")
@@ -45,7 +50,7 @@ func printStatusTable(tools []registry.Tool) error {
 		}
 		svc := "-"
 		if tool.Service != "" {
-			state, _ := system.ServiceStatus(tool.Service)
+			state, _ := system.ServiceStatusFor(&tool)
 			switch state {
 			case system.ServiceRunning:
 				svc = "running"

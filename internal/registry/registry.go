@@ -5,15 +5,37 @@ type SourceType string
 const (
 	SourcePacman SourceType = "pacman"
 	SourceYay    SourceType = "yay"
+	// SourceServiceOnly: archstack tidak memasang/menghapus binary, hanya
+	// mengelola service-nya (binary diasumsikan sudah dipasang manual).
+	SourceServiceOnly SourceType = "service"
+)
+
+// ServiceScope menentukan domain systemd yang dipakai sebuah service.
+type ServiceScope int
+
+const (
+	ServiceSystem ServiceScope = iota // systemctl + sudo (default)
+	ServiceUser                       // systemctl --user (tanpa sudo)
 )
 
 type Tool struct {
-	Name    string
-	Pkg     string
-	From    SourceType
-	Binary  string
-	Service string
-	Desc    string
+	Name            string
+	Pkg             string
+	From            SourceType
+	Binary          string
+	Service         string
+	ServiceScope    ServiceScope
+	Linger          bool     // aktifkan loginctl enable-linger (user service)
+	PidFile         string   // opsional, "~/.app/server/.pid" untuk deteksi instance manual
+	HealthURL       string   // opsional, dicek setelah service dinyalakan
+	UnitArgs        []string // opsional, argumen ExecStart (mis. serve --no-open)
+	UnitDescription string   // opsional, Description di unit; default: Desc
+	Desc            string
+}
+
+// IsServiceOnly menandai tool yang binary-nya tidak dikelola archstack.
+func (t Tool) IsServiceOnly() bool {
+	return t.From == SourceServiceOnly
 }
 
 var defaultTools = []Tool{
@@ -128,6 +150,15 @@ var defaultTools = []Tool{
 	{
 		Name: "tmux", Pkg: "tmux", From: SourcePacman, Binary: "tmux",
 		Desc: "Terminal multiplexer",
+	},
+	{
+		Name: "omniroute", From: SourceServiceOnly, Binary: "omniroute",
+		Service: "omniroute", ServiceScope: ServiceUser, Linger: true,
+		PidFile:         "~/.omniroute/server/.pid",
+		HealthURL:       "http://127.0.0.1:20128/api/health",
+		UnitArgs:        []string{"serve", "--no-open"},
+		UnitDescription: "OmniRoute AI proxy router",
+		Desc:            "OmniRoute AI proxy router — autostart service (binary manual)",
 	},
 }
 

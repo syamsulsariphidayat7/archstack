@@ -1,6 +1,9 @@
 package registry
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestAllToolsNotEmpty(t *testing.T) {
 	tools := AllTools()
@@ -20,17 +23,41 @@ func TestAllToolsDataValid(t *testing.T) {
 		}
 		seen[tool.Name] = true
 
-		if tool.Pkg == "" {
+		if tool.Pkg == "" && tool.From != SourceServiceOnly {
 			t.Errorf("%s: Pkg kosong", tool.Name)
 		}
 		if tool.Desc == "" {
 			t.Errorf("%s: Desc kosong", tool.Name)
 		}
-		if tool.From != SourcePacman && tool.From != SourceYay {
+		switch tool.From {
+		case SourcePacman, SourceYay:
+			if tool.Pkg == "" {
+				t.Errorf("%s: Pkg kosong", tool.Name)
+			}
+		case SourceServiceOnly:
+			if tool.Pkg != "" {
+				t.Errorf("%s: tool service-only tidak boleh punya Pkg (dapat %q)", tool.Name, tool.Pkg)
+			}
+			if tool.Service == "" {
+				t.Errorf("%s: tool service-only wajib punya Service", tool.Name)
+			}
+		default:
 			t.Errorf("%s: Source tidak valid: %q", tool.Name, tool.From)
 		}
 		if tool.Binary == "" && tool.Service == "" {
 			t.Errorf("%s: tidak punya Binary maupun Service", tool.Name)
+		}
+		if tool.ServiceScope == ServiceUser && tool.Service == "" {
+			t.Errorf("%s: ServiceScope user tanpa Service", tool.Name)
+		}
+		if tool.Linger && tool.ServiceScope != ServiceUser {
+			t.Errorf("%s: Linger hanya berlaku untuk user service", tool.Name)
+		}
+		if tool.PidFile != "" && !strings.HasPrefix(tool.PidFile, "~/") {
+			t.Errorf("%s: PidFile harus diawali ~/ (dapat %q)", tool.Name, tool.PidFile)
+		}
+		if tool.HealthURL != "" && !strings.HasPrefix(tool.HealthURL, "http") {
+			t.Errorf("%s: HealthURL tidak valid: %q", tool.Name, tool.HealthURL)
 		}
 	}
 }

@@ -17,14 +17,14 @@ func stopCmd(name string) error {
 		return fmt.Errorf("[info] %s tidak punya service untuk distop\n", name)
 	}
 
-	state, _ := system.ServiceStatus(tool.Service)
+	state, _ := system.ServiceStatusFor(tool)
 	if state != system.ServiceRunning {
 		fmt.Printf("[ok] Service %s tidak sedang berjalan\n", tool.Service)
 		return nil
 	}
 
 	fmt.Printf("[run] Menghentikan service %s...\n", tool.Service)
-	if err := system.StopService(tool.Service); err != nil {
+	if err := system.StopServiceFor(tool); err != nil {
 		return fmt.Errorf("[error] Gagal stop service %s: %w", tool.Service, err)
 	}
 	fmt.Printf("[done] Service %s berhenti\n", tool.Service)

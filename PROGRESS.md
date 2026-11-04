@@ -1,7 +1,7 @@
 # PROGRESS.md — ArchStack
 
 ## Fase Proyek
-Development (fitur iterasi) — release v0.3.0 sudah rilis, v0.4.0 (tool service-only) siap dirilis
+Development (fitur iterasi) — release v0.5.0 sudah rilis (tool service-only omniroute)
 
 ## Status Terakhir
 - Release v0.1.0: initial CLI (list/install/uninstall/run + TUI + 12 tool)
@@ -15,7 +15,7 @@ Development (fitur iterasi) — release v0.3.0 sudah rilis, v0.4.0 (tool service
   - **Unit test + CI**: tambah test untuk registry/upgrade/search/padRight (murni, tanpa sudo/pacman/systemctl/network) + workflow `.github/workflows/ci.yml` (gofmt/vet/test/build di push/PR). Refactor kecil: ekstrak `isUpToDate` (upgrade.go) dan `searchTools` (search.go) agar testable.
   - **Rekomendasi versi saat install** (dinamis): `AvailableVersion` query `pacman -Si`/`yay -Si`, CLI install & TUI menampilkan "versi rekomendasi" sebelum install. Helper murni `parseVersion` di-cover unit test.
   - **Kolom VERSI di status/list**: `pacman -Q` (versi terinstall, 1 call) + `pacman -Sl` (versi repo, 1 call) via `ToolVersionStrings`; terinstall → tampil versi terinstall, selain itu versi rekomendasi. `installedPkgs` di TUI pakai `InstalledVersions` (hemat 1 subprocess).
-- Sesion ini (2026-10-19) — **tool service-only pertama: `omniroute`**:
+- Release v0.4.0 & v0.5.0: **tool service-only pertama: `omniroute`**:
   - Keputusan user: archstack **hanya mengurus service**, binary/npm tidak dipasang dan tidak dihapus (`SourceServiceOnly`). Uninstall = service saja; unit yang sudah ada diadopsi (backup bila isi beda).
   - `registry.Tool`: tambah `ServiceScope` (system/user), `Linger`, `PidFile`, `HealthURL`, `SourceServiceOnly`; entry `omniroute` = user service + linger + pid file `~/.omniroute/server/.pid` + health `:20128`.
   - `internal/system/userunit.go`: `ResolveBinary` (PATH + `~/.npm-global/bin`, `~/.local/bin`, bun, deno, `/usr/local/bin`), `RenderUnit` (`Type=notify`, watchdog 180s, foreground `serve --no-open`), `WriteUserUnit` (backup bila isi beda), `RemoveUserUnit` (backup unit tanpa marker), `systemctl --user` (daemon-reload/restart), linger, `WaitHealthy`.
@@ -26,7 +26,7 @@ Development (fitur iterasi) — release v0.3.0 sudah rilis, v0.4.0 (tool service
   - **Bug yang ditemukan saat uji live**: `install` sempat short-circuit "sudah terinstal" karena binary ada (padahal service belum tentu terdaftar) → dilewati khusus service-only; dan `PidFile` berisi PID child, bukan MainPID → cek konflik hanya dilakukan saat service tidak aktif.
 
 ## Langkah Selanjutnya
-- Rilis v0.4.0: bump tag, CI build amd64/arm64, update binary `/usr/local/bin`.
+- v0.6.0 (opsional): fitur baru atau perbaikan berikutnya.
 - Ide berikutnya (opsional):
   - Integration test end-to-end (mis. mock `exec.Command` untuk install/status)
   - Changelog otomatis dari release notes GitHub

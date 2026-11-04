@@ -82,7 +82,7 @@ hanya perlu autostart service, gunakan `SourceServiceOnly` + user service:
 ```bash
 git clone https://github.com/syamsulsariphidayat7/archstack.git
 cd archstack
-go build -ldflags "-X github.com/syamsulsariphidayat7/archstack/internal/cli.Version=0.1.0" -o archstack .
+go build -ldflags "-X github.com/syamsulsariphidayat7/archstack/internal/cli.Version=v0.5.0" -o archstack .
 sudo cp archstack /usr/local/bin/
 ```
 

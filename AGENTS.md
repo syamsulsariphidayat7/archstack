@@ -7,7 +7,7 @@ CLI (Go) untuk kelola development tools di Arch Linux. TUI (bubbletea) + subcomm
 - `go build ./...` — build
 - `go vet ./...` — lint
 - `go test ./...` — unit test
-- `go build -ldflags "-X github.com/syamsulsariphidayat7/archstack/internal/cli.Version=v0.3.0" -o archstack .` — build dengan versi
+- `go build -ldflags "-X github.com/syamsulsariphidayat7/archstack/internal/cli.Version=v0.5.0" -o archstack .` — build dengan versi
 
 ## Struktur
 - `main.go` → entry, panggil `cli.Root`

@@ -45,6 +45,8 @@ func Root(args []string) error {
 			return errors.New("[error] Gunakan: archstack search <query>")
 		}
 		return searchCmd(args[1])
+	case "web":
+		return webCmd(args[1:])
 	case "upgrade":
 		return upgradeCmd()
 	case "version", "--version", "-v":
@@ -71,6 +73,7 @@ Penggunaan:
   archstack uninstall <tool> [tool2 ...]  Hapus tool
   archstack run <tool>   Jalankan service tool
   archstack stop <tool>  Hentikan service tool
+  archstack web [--addr 127.0.0.1:8090]   Web UI lokal (hanya localhost)
   archstack upgrade      Perbarui archstack ke rilis terbaru
   archstack version      Tampilkan versi archstack
 
@@ -81,6 +84,7 @@ Contoh:
   archstack uninstall nginx
   archstack run postgres
   archstack stop postgres
+  archstack web
   archstack status nginx
   archstack status omniroute
   archstack search database`)

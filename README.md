@@ -37,7 +37,19 @@ archstack install omniroute       # Daftarkan autostart service (binary sudah ad
 archstack status omniroute        # Detail service + linger + health
 archstack upgrade                 # Perbarui archstack
 archstack version                 # Tampilkan versi
+archstack web                     # Web UI lokal di http://127.0.0.1:8090
 ```
+
+**Mode Web UI:**
+```bash
+archstack web                          # http://127.0.0.1:8090
+archstack web --addr 127.0.0.1:9000    # ganti port (tetap localhost)
+```
+Halaman web untuk list/cari tool dan aksi install/uninstall/run/stop dengan
+log proses langsung di sidebar. Server hanya menerima alamat loopback —
+UI ini setara akses root, jangan pernah diekspos ke jaringan. Aksi yang
+butuh sudo meminta password lewat modal (tidak disimpan); aksi berjalan
+satu per satu karena pacman mengunci database.
 
 ## Menambah Tool Baru
 

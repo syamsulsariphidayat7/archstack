@@ -11,11 +11,14 @@ CLI (Go) untuk kelola development tools di Arch Linux. TUI (bubbletea) + subcomm
 
 ## Struktur
 - `main.go` → entry, panggil `cli.Root`
-- `internal/cli/` — subcommand: root, install, uninstall, run, stop, status, search, version, upgrade
+- `internal/cli/` — subcommand: root, install, uninstall, run, stop, status, search, version, upgrade, web
   - `service.go` — alur install/uninstall tool service-only
+  - `web.go` — subcommand `web`: validasi alamat WAJIB loopback, lalu `web.Run`
 - `internal/registry/` — `defaultTools` (data tool)
 - `internal/system/` — pacman/yay/systemd wrapper
   - `userunit.go` — render/tulis/hapus unit user, `systemctl --user`, linger, health check
+  - `execw.go` — varian streaming untuk Web UI: output ke `io.Writer`, password sudo via `sudo -S` (kosong → `sudo -n`)
+- `internal/web/` — Web UI lokal: API `/api/tools` `/api/action` `/api/job`, satu job pada satu waktu, UI ter-embed di `static/index.html`; log proses di sidebar kanan (bukan modal — modal hanya untuk password sudo)
 - `internal/tui/` — bubbletea UI
 - `scripts/install.sh` — one-liner dari GitHub release
 - `.github/workflows/ci.yml` — gofmt/vet/test/build otomatis di setiap push/PR

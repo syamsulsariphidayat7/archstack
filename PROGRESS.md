@@ -26,6 +26,7 @@ Development (fitur iterasi) — release v0.5.0 sudah rilis (tool service-only om
   - **Bug yang ditemukan saat uji live**: `install` sempat short-circuit "sudah terinstal" karena binary ada (padahal service belum tentu terdaftar) → dilewati khusus service-only; dan `PidFile` berisi PID child, bukan MainPID → cek konflik hanya dilakukan saat service tidak aktif.
 
 ## Langkah Selanjutnya
+- **Web UI (menuju v0.6.0, belum dirilis)**: subcommand `archstack web` — server HTTP lokal (bind loopback saja, ditolak keras bila non-lokal) + UI satu halaman ter-embed (`internal/web/static/index.html`, tanpa dependensi baru). API: `GET /api/tools`, `POST /api/action`, `GET /api/job`. Layout: daftar tool di kiri, **log proses permanen di sidebar kanan** (sticky; di layar sempit jadi panel nempel di bawah) — keputusan user, bukan modal. Modal hanya untuk password sudo (dialirkan ke `sudo -S`, tidak disimpan; kosong = andalkan cache sudo via `sudo -n`). Aksi satu per satu (409 bila sibuk) karena pacman mengunci database. Fungsi streaming baru di `internal/system/execw.go` (`InstallPacmanW`/`InstallYayW`/`UninstallW`/`StartServiceForW`/`StopServiceForW` dengan `io.Writer`); aksi service-only memakai ulang CLI lewat self-exec. Unit test murni: validasi aksi, `needsSudo`, job manager + line writer, validasi alamat loopback.
 - v0.6.0 (opsional): fitur baru atau perbaikan berikutnya.
 - Ide berikutnya (opsional):
   - Integration test end-to-end (mis. mock `exec.Command` untuk install/status)

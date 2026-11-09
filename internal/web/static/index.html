@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArchStack Web</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070b10; --panel:#0d141c; --panel2:#111b26; --line:#1e2c3c;
+  --text:#e8f0f2; --muted:#8fa3b5; --green:#4ADE80; --cyan:#22D3EE;
+  --red:#f87171; --amber:#fbbf24; --grad:linear-gradient(90deg,#4ADE80,#22D3EE);
+}
+body{background:var(--bg);color:var(--text);font-family:ui-sans-system,system-ui,"Segoe UI",Roboto,sans-serif;padding:22px 16px 40px}
+.wrap{max-width:1240px;margin:0 auto}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{width:46px;height:46px;flex:none}
+.brand h1{font-size:24px;letter-spacing:.5px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.brand h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand p{color:var(--muted);font-size:13px;margin-top:2px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.head-right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{font-size:12px;padding:6px 11px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace}
+.pill b{color:var(--green);font-weight:600}
+/* layout: konten kiri + log sidebar kanan */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:16px;margin-top:16px;align-items:start}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat .n{font-size:26px;font-weight:700}
+.stat .n.g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat .l{color:var(--muted);font-size:12px;margin-top:2px;text-transform:uppercase;letter-spacing:.6px}
+.toolbar{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.search{flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0 12px}
+.search input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;padding:11px 0}
+.search input::placeholder{color:var(--muted)}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{font-size:12.5px;padding:8px 13px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer}
+.chip.on{background:var(--grad);color:#04120a;border-color:transparent;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:12px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;display:flex;flex-direction:column;gap:9px}
+.card:hover{border-color:#2e435c}
+.top{display:flex;align-items:center;gap:10px}
+.mono{width:38px;height:38px;flex:none;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#04120a;background:var(--grad);font-family:ui-monospace,Menlo,Consolas,monospace;text-transform:uppercase}
+.top h3{font-size:16px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.top .pkg{color:var(--muted);font-size:11.5px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.dot{margin-left:auto;width:9px;height:9px;border-radius:50%;flex:none}
+.dot.run{background:var(--green);box-shadow:0 0 8px var(--green)}
+.dot.stop{background:var(--amber)}
+.dot.inst{background:#5b7186}
+.dot.none{background:#33465a}
+.desc{color:var(--muted);font-size:13px;line-height:1.45;min-height:38px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:11px;padding:3.5px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace}
+.badge.ok{color:var(--green);border-color:#1d4531}
+.badge.run{color:#04120a;background:var(--grad);border-color:transparent;font-weight:700}
+.badge.warn{color:var(--amber);border-color:#57451a}
+.badge.src{color:var(--cyan)}
+.actions{display:flex;gap:7px;margin-top:auto}
+.btn{flex:1;font-size:13px;padding:9px 6px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);cursor:pointer;font-weight:600}
+.btn:hover{border-color:#3b5878}
+.btn.primary{background:var(--grad);color:#04120a;border-color:transparent}
+.btn.danger{color:var(--red)}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:34px 0;font-size:14px}
+/* sidebar log — selalu terlihat */
+aside{position:sticky;top:16px}
+.logbox{background:#05080b;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;height:calc(100vh - 48px);min-height:340px}
+.loghead{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+.loghead .t{font-size:13px;font-weight:700;font-family:ui-monospace,Menlo,Consolas,monospace}
+.loghead .st{font-size:11.5px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace}
+.loghead .st b{color:var(--amber);font-weight:600}
+.loghead button{margin-left:auto;background:none;border:1px solid var(--line);color:var(--muted);font-size:12px;padding:5px 11px;border-radius:8px;cursor:pointer}
+.log{padding:12px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.75;overflow-y:auto;white-space:pre-wrap;word-break:break-word;flex:1}
+.log .ok{color:var(--green)} .log .err{color:var(--red)} .log .inf{color:var(--cyan)} .log .dim{color:var(--muted)}
+.side-note{margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px 15px;color:var(--muted);font-size:12.5px;line-height:1.6}
+.side-note b{color:var(--text)}
+/* modal sudo */
+.overlay{position:fixed;inset:0;background:rgba(2,6,10,.72);display:none;align-items:center;justify-content:center;padding:16px;z-index:30}
+.overlay.show{display:flex}
+.modal{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:22px;max-width:400px;width:100%}
+.modal h3{font-size:17px;margin-bottom:8px}
+.modal p{color:var(--muted);font-size:13.5px;line-height:1.55}
+.modal code{color:var(--cyan);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+.modal input{width:100%;margin-top:14px;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px 12px;font-size:14px;outline:none}
+.modal .row{display:flex;gap:8px;margin-top:16px}
+.modal .note{margin-top:12px;font-size:12px;color:var(--muted)}
+footer{margin-top:20px;color:var(--muted);font-size:12.5px;text-align:center;line-height:1.6}
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  aside{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:0 10px 10px;background:linear-gradient(transparent,var(--bg) 30%)}
+  .logbox{height:218px;min-height:218px}
+  .side-note{display:none}
+  body{padding-bottom:238px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <svg class="logo" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#4ADE80"/><stop offset="1" stop-color="#22D3EE"/></linearGradient></defs>
+      <path d="M33.5 10.5c5 3.6 5 10.4 0 14-4.3 3.1-9.8 3.1-13.7-.6C15.6 19.8 9.9 19.6 6.8 24c-3.4 4.8-.6 11.4 5 13.5 4.6 1.7 9.4-.2 12.4-3.9 1.9-2.3 4.4-3.6 7-3.4" stroke="url(#lg)" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="38.5" cy="29.5" r="3.4" fill="#22D3EE"/>
+    </svg>
+    <div class="brand">
+      <h1>ARCH<span>STACK</span> <span style="font-size:13px;-webkit-text-fill-color:#8fa3b5;color:#8fa3b5">web</span></h1>
+      <p>kelola dev tools Arch dari browser — data langsung dari sistem ini</p>
+    </div>
+    <div class="head-right">
+      <span class="pill">● <b id="addr">localhost</b> lokal saja</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <main>
+      <div class="stats">
+        <div class="stat"><div class="n g" id="st-total">–</div><div class="l">Total tool</div></div>
+        <div class="stat"><div class="n" id="st-inst">–</div><div class="l">Terinstall</div></div>
+        <div class="stat"><div class="n" id="st-run">–</div><div class="l">Service jalan</div></div>
+        <div class="stat"><div class="n" id="st-miss">–</div><div class="l">Belum terinstall</div></div>
+      </div>
+
+      <div class="toolbar">
+        <label class="search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8fa3b5" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8"/></svg>
+          <input id="q" type="text" placeholder="Cari tool… coba: database, node, docker">
+        </label>
+        <div class="chips" id="chips">
+          <button class="chip on" data-f="all">Semua</button>
+          <button class="chip" data-f="installed">Terinstall</button>
+          <button class="chip" data-f="missing">Belum</button>
+          <button class="chip" data-f="service">Ada service</button>
+          <button class="chip" data-f="pacman">pacman</button>
+          <button class="chip" data-f="yay">yay / AUR</button>
+        </div>
+      </div>
+
+      <div class="grid" id="grid"><div class="empty">Memuat daftar tool…</div></div>
+    </main>
+
+    <aside>
+      <div class="logbox">
+        <div class="loghead">
+          <span class="t">Log proses</span>
+          <span class="st" id="jobstatus">idle</span>
+          <button id="clearlog" type="button">Bersihkan</button>
+        </div>
+        <div class="log" id="log"></div>
+      </div>
+      <div class="side-note">
+        <b>Satu proses pada satu waktu.</b> Aksi lain ditolak selama ada proses jalan, karena pacman mengunci database. Log di panel ini selalu terlihat — tidak perlu membuka apa pun.
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    Server ini hanya melayani localhost. Siapa pun yang bisa membuka halaman ini setara memegang root — jangan pernah diekspos ke jaringan.
+  </footer>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>Password sudo diperlukan</h3>
+    <p>Aksi <code id="sudo-action">install nginx</code> butuh hak root. Password dialirkan ke <code>sudo -S</code> untuk satu proses ini saja. Kosongkan bila cache sudo masih berlaku.</p>
+    <input type="password" id="sudo-pass" placeholder="Password sudo (boleh kosong)" autocomplete="off">
+    <div class="row">
+      <button class="btn" id="sudo-cancel" type="button">Batal</button>
+      <button class="btn primary" id="sudo-go" type="button">Lanjutkan</button>
+    </div>
+    <p class="note">Tidak disimpan, tidak dicatat di log, hilang begitu proses selesai.</p>
+  </div>
+</div>
+
+<script>
+var tools=[], filter="all", jobRunning=false, pollTimer=null, shownJobId=0, shownLines=0, shownError=false, pending=null;
+
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function find(name){ for(var i=0;i<tools.length;i++) if(tools[i].name===name) return tools[i]; return null; }
+
+function logLocal(line,cls){
+  var el=$("log"), d=document.createElement("div");
+  if(cls) d.className=cls;
+  d.textContent=line; el.appendChild(d); el.scrollTop=el.scrollHeight;
+}
+function lineClass(line){
+  if(line.indexOf("[ok]")===0||line.indexOf("[done]")===0) return "ok";
+  if(line.indexOf("[error]")===0) return "err";
+  if(line.indexOf("[install]")===0||line.indexOf("[run]")===0||line.indexOf("[stop]")===0||line.indexOf("[info]")===0) return "inf";
+  return "dim";
+}
+
+function stats(){
+  $("st-total").textContent=tools.length;
+  $("st-inst").textContent=tools.filter(function(t){return t.installed}).length;
+  $("st-run").textContent=tools.filter(function(t){return t.svc==="running"}).length;
+  $("st-miss").textContent=tools.filter(function(t){return !t.installed}).length;
+}
+function matches(t){
+  var q=$("q").value.trim().toLowerCase();
+  if(q && (t.name+" "+t.pkg+" "+t.desc).toLowerCase().indexOf(q)<0) return false;
+  if(filter==="installed") return t.installed;
+  if(filter==="missing") return !t.installed;
+  if(filter==="service") return !!t.service;
+  if(filter==="pacman") return t.from==="pacman";
+  if(filter==="yay") return t.from==="yay";
+  return true;
+}
+function dotClass(t){ if(t.svc==="running")return"run"; if(t.svc)return"stop"; if(t.installed)return"inst"; return"none"; }
+function badges(t){
+  var h="";
+  if(t.svc==="running") h+='<span class="badge run">SERVICE JALAN</span>';
+  else if(t.installed) h+='<span class="badge ok">TERINSTALL</span>';
+  else h+='<span class="badge">BELUM TERINSTALL</span>';
+  if(t.svc && t.svc!=="running" && t.installed) h+='<span class="badge warn">SERVICE BERHENTI</span>';
+  h+='<span class="badge src">'+(t.serviceOnly?"service-only":esc(t.from))+'</span>';
+  if(t.scope==="user") h+='<span class="badge">user service</span>';
+  if(t.version) h+='<span class="badge">v '+esc(t.version)+'</span>';
+  return h;
+}
+function actions(t){
+  var h="";
+  if(t.serviceOnly){
+    if(!t.unit) return '<button class="btn primary" data-act="install" data-n="'+t.name+'">Pasang Service</button>';
+    h+= t.svc==="running"
+      ? '<button class="btn danger" data-act="stop" data-n="'+t.name+'">Stop</button>'
+      : '<button class="btn primary" data-act="run" data-n="'+t.name+'">Run</button>';
+    h+='<button class="btn danger" data-act="uninstall" data-n="'+t.name+'">Hapus Service</button>';
+    return h;
+  }
+  if(!t.installed) return '<button class="btn primary" data-act="install" data-n="'+t.name+'">Install</button>';
+  if(t.service){
+    h+= t.svc==="running"
+      ? '<button class="btn danger" data-act="stop" data-n="'+t.name+'">Stop</button>'
+      : '<button class="btn primary" data-act="run" data-n="'+t.name+'">Run</button>';
+  }
+  h+='<button class="btn danger" data-act="uninstall" data-n="'+t.name+'">Uninstall</button>';
+  return h;
+}
+function render(){
+  stats();
+  var list=tools.filter(matches);
+  if(!list.length){ $("grid").innerHTML='<div class="empty">Tidak ada tool yang cocok. Coba kata kunci lain.</div>'; return; }
+  $("grid").innerHTML=list.map(function(t){
+    return '<div class="card"><div class="top"><div class="mono">'+esc(t.name.slice(0,2))+'</div>'+
+      '<div><h3>'+esc(t.name)+'</h3><div class="pkg">'+esc(t.pkg)+'</div></div>'+
+      '<span class="dot '+dotClass(t)+'"></span></div>'+
+      '<p class="desc">'+esc(t.desc)+'</p>'+
+      '<div class="badges">'+badges(t)+'</div>'+
+      '<div class="actions">'+actions(t)+'</div></div>';
+  }).join("");
+  var btns=document.querySelectorAll("[data-act]");
+  for(var i=0;i<btns.length;i++) btns[i].addEventListener("click",onAction);
+}
+function loadTools(){
+  fetch("/api/tools").then(function(r){return r.json()}).then(function(d){
+    tools=d||[]; render();
+  }).catch(function(){ $("grid").innerHTML='<div class="empty">Gagal memuat /api/tools — server masih jalan?</div>'; });
+}
+
+function needsSudoClient(t,act){
+  if(t.serviceOnly) return false;
+  if(act==="install") return t.from!=="yay";
+  if(act==="uninstall") return true;
+  if(act==="run"||act==="stop") return t.scope!=="user";
+  return false;
+}
+function onAction(e){
+  var act=e.currentTarget.getAttribute("data-act"), t=find(e.currentTarget.getAttribute("data-n"));
+  if(!t) return;
+  if(jobRunning){ logLocal("[info] Masih ada proses jalan — aksi '"+act+" "+t.name+"' ditolak, tunggu sampai selesai.","err"); return; }
+  if(needsSudoClient(t,act)){
+    pending={act:act,t:t};
+    $("sudo-action").textContent=act+" "+t.name;
+    $("sudo-pass").value="";
+    $("overlay").classList.add("show");
+    setTimeout(function(){$("sudo-pass").focus()},60);
+  } else sendAction(act,t,"");
+}
+function sendAction(act,t,pass){
+  fetch("/api/action",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({tool:t.name,action:act,password:pass})})
+  .then(function(r){ return r.json().then(function(d){ return {status:r.status,d:d}; }); })
+  .then(function(res){
+    if(res.status===202){ jobRunning=true; startPolling(); }
+    else logLocal("[error] "+((res.d&&res.d.error)||("HTTP "+res.status)),"err");
+  })
+  .catch(function(err){ logLocal("[error] Gagal menghubungi server: "+err,"err"); });
+}
+function startPolling(){
+  if(pollTimer) return;
+  pollTimer=setInterval(pollJob,650);
+  pollJob();
+}
+function pollJob(){
+  fetch("/api/job").then(function(r){return r.json()}).then(function(job){
+    if(job.id!==shownJobId){ shownJobId=job.id; shownLines=0; shownError=false; $("log").innerHTML=""; }
+    var lines=job.lines||[];
+    for(var i=shownLines;i<lines.length;i++) logLocal(lines[i],lineClass(lines[i]));
+    shownLines=lines.length;
+    if(job.running){
+      jobRunning=true;
+      $("jobstatus").innerHTML="<b>▶ "+esc(job.action)+" "+esc(job.tool)+"</b> — berjalan…";
+    } else {
+      $("jobstatus").textContent="idle";
+      if(job.error && !shownError){ shownError=true; logLocal("[error] "+job.error,"err"); }
+      if(pollTimer){ clearInterval(pollTimer); pollTimer=null; }
+      if(jobRunning){ jobRunning=false; loadTools(); }
+    }
+  }).catch(function(){});
+}
+
+$("sudo-cancel").addEventListener("click",function(){ $("overlay").classList.remove("show"); logLocal("[info] Aksi dibatalkan di modal sudo.","dim"); pending=null; });
+$("sudo-go").addEventListener("click",function(){
+  $("overlay").classList.remove("show");
+  if(pending){ var p=pending; pending=null; sendAction(p.act,p.t,$("sudo-pass").value); $("sudo-pass").value=""; }
+});
+$("sudo-pass").addEventListener("keydown",function(e){ if(e.key==="Enter") $("sudo-go").click(); });
+$("clearlog").addEventListener("click",function(){ $("log").innerHTML=""; shownLines=(function(){return shownLines})(); });
+$("q").addEventListener("input",render);
+$("chips").addEventListener("click",function(e){
+  if(e.target.tagName!=="BUTTON")return;
+  filter=e.target.getAttribute("data-f");
+  var cs=document.querySelectorAll(".chip");
+  for(var i=0;i<cs.length;i++) cs[i].classList.toggle("on",cs[i]===e.target);
+  render();
+});
+$("addr").textContent=location.host||"localhost";
+logLocal("[info] ArchStack Web — data langsung dari sistem ini.","inf");
+logLocal("[info] Klik Install / Run / Stop; log proses tampil di panel ini.","dim");
+loadTools();
+pollJob();
+</script>
+</body>
+</html>

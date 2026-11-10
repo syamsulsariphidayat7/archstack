@@ -11,13 +11,15 @@ CLI (Go) untuk kelola development tools di Arch Linux. TUI (bubbletea) + subcomm
 
 ## Struktur
 - `main.go` → entry, panggil `cli.Root`
-- `internal/cli/` — subcommand: root, install, uninstall, run, stop, status, search, version, upgrade, web
+- `internal/cli/` — subcommand: root, install, uninstall, run, stop, status, search, version, upgrade, web, setup
   - `service.go` — alur install/uninstall tool service-only
   - `web.go` — subcommand `web`: validasi alamat WAJIB loopback, lalu `web.Run`
+  - `setup.go` — subcommand `setup`: inisialisasi satu kali tool ber-`SetupCmd` (idempotent via penanda)
 - `internal/registry/` — `defaultTools` (data tool)
 - `internal/system/` — pacman/yay/systemd wrapper
   - `userunit.go` — render/tulis/hapus unit user, `systemctl --user`, linger, health check
-  - `execw.go` — varian streaming untuk Web UI: output ke `io.Writer`, password sudo via `sudo -S` (kosong → `sudo -n`)
+  - `execw.go` — varian streaming untuk Web UI: output ke `io.Writer`, password sudo via `sudo -S` (kosong → `sudo -n`); builder `sudoCmdOpts` juga dipakai runner setup (`sudo -u`)
+  - `setup.go` — `SetupDone` (cek penanda di direktori data) + `RunSetup`/`RunSetupW`; field setup ada di registry (`SetupDir`/`SetupMarker`/`SetupUser`/`SetupCmd`/`SetupNote`), saat ini hanya postgres + mariadb
 - `internal/web/` — Web UI lokal: API `/api/tools` `/api/action` `/api/job`, satu job pada satu waktu, UI ter-embed di `static/index.html`; log proses di sidebar kanan (bukan modal — modal hanya untuk password sudo)
   - `notify.go` — `sd_notify`: server WAJIB lapor `READY=1` + ping watchdog karena unit `archstack-web` (tool service-only di registry, user service + linger) dirender `Type=notify`; no-op bila tanpa `NOTIFY_SOCKET`
 - `internal/tui/` — bubbletea UI

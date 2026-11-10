@@ -213,6 +213,7 @@ function badges(t){
   else if(t.installed) h+='<span class="badge ok">TERINSTALL</span>';
   else h+='<span class="badge">BELUM TERINSTALL</span>';
   if(t.svc && t.svc!=="running" && t.installed) h+='<span class="badge warn">SERVICE BERHENTI</span>';
+  if(t.setup==="needed" && t.installed) h+='<span class="badge warn">PERLU SETUP</span>';
   h+='<span class="badge src">'+(t.serviceOnly?"service-only":esc(t.from))+'</span>';
   if(t.scope==="user") h+='<span class="badge">user service</span>';
   if(t.version) h+='<span class="badge">v '+esc(t.version)+'</span>';
@@ -229,6 +230,7 @@ function actions(t){
     return h;
   }
   if(!t.installed) return '<button class="btn primary" data-act="install" data-n="'+t.name+'">Install</button>';
+  if(t.setup==="needed") h+='<button class="btn primary" data-act="setup" data-n="'+t.name+'">Setup</button>';
   if(t.service){
     h+= t.svc==="running"
       ? '<button class="btn danger" data-act="stop" data-n="'+t.name+'">Stop</button>'
@@ -260,6 +262,7 @@ function loadTools(){
 
 function needsSudoClient(t,act){
   if(t.serviceOnly) return false;
+  if(act==="setup") return true;
   if(act==="install") return t.from!=="yay";
   if(act==="uninstall") return true;
   if(act==="run"||act==="stop") return t.scope!=="user";

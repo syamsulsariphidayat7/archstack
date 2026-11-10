@@ -19,6 +19,9 @@ func runCmd(name string) error {
 			fmt.Printf("[ok] Service %s sudah berjalan\n", tool.Service)
 			return nil
 		}
+		if tool.NeedsSetup() && !system.SetupDone(tool) {
+			return fmt.Errorf("[error] %s perlu setup satu kali dulu sebelum bisa jalan — jalankan: archstack setup %s", tool.Name, tool.Name)
+		}
 		fmt.Printf("[run] Menjalankan service %s...\n", tool.Service)
 		if err := system.StartServiceFor(tool); err != nil {
 			return fmt.Errorf("[error] Gagal start service %s: %w", tool.Service, err)

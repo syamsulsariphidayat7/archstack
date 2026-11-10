@@ -31,6 +31,20 @@ type Tool struct {
 	UnitArgs        []string // opsional, argumen ExecStart (mis. serve --no-open)
 	UnitDescription string   // opsional, Description di unit; default: Desc
 	Desc            string
+
+	// Setup satu kali untuk tool yang butuh inisialisasi sebelum service
+	// pertama kali bisa start (mis. database: initdb / install-db).
+	// Kosong untuk tool yang tidak butuh setup.
+	SetupDir    string   // direktori data yang harus terinisialisasi
+	SetupMarker string   // path relatif ke SetupDir, penanda setup sudah dilakukan
+	SetupUser   string   // user untuk menjalankan SetupCmd via sudo -u (kosong = root)
+	SetupCmd    []string // perintah inisialisasi (argv, tanpa sudo)
+	SetupNote   string   // petunjuk langkah manual berikutnya setelah setup
+}
+
+// NeedsSetup melaporkan apakah tool punya langkah setup satu kali.
+func (t Tool) NeedsSetup() bool {
+	return len(t.SetupCmd) > 0
 }
 
 // IsServiceOnly menandai tool yang binary-nya tidak dikelola archstack.
@@ -62,6 +76,10 @@ var defaultTools = []Tool{
 	{
 		Name: "postgres", Pkg: "postgresql", From: SourcePacman, Binary: "psql",
 		Service: "postgresql", Desc: "PostgreSQL database",
+		SetupDir: "/var/lib/postgres/data", SetupMarker: "PG_VERSION",
+		SetupUser: "postgres",
+		SetupCmd:  []string{"initdb", "--locale", "en_US.UTF-8", "-E", "UTF8", "-D", "/var/lib/postgres/data"},
+		SetupNote: "Buat user & database lewat psql sebagai postgres, contoh: sudo -iu postgres psql -c \"CREATE USER nama CREATEDB PASSWORD '...'\" — password tidak dikelola archstack.",
 	},
 	{
 		Name: "redis", Pkg: "redis", From: SourcePacman, Binary: "redis-cli",
@@ -70,6 +88,9 @@ var defaultTools = []Tool{
 	{
 		Name: "mariadb", Pkg: "mariadb", From: SourcePacman, Binary: "mariadb",
 		Service: "mariadb", Desc: "MariaDB database server",
+		SetupDir: "/var/lib/mysql", SetupMarker: "mysql",
+		SetupCmd:  []string{"mariadb-install-db", "--user=mysql", "--basedir=/usr", "--datadir=/var/lib/mysql"},
+		SetupNote: "Amankan instalasi: jalankan `mariadb-secure-installation` setelah service pertama kali jalan.",
 	},
 	{
 		Name: "docker", Pkg: "docker", From: SourcePacman, Binary: "docker",

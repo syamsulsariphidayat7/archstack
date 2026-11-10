@@ -17,8 +17,9 @@ func mustTool(t *testing.T, name string) *registry.Tool {
 }
 
 func TestValidateAction(t *testing.T) {
-	git := mustTool(t, "git")     // tanpa service
-	nginx := mustTool(t, "nginx") // dengan service
+	git := mustTool(t, "git")           // tanpa service
+	nginx := mustTool(t, "nginx")       // dengan service
+	postgres := mustTool(t, "postgres") // dengan setup
 
 	cases := []struct {
 		tool    *registry.Tool
@@ -29,10 +30,13 @@ func TestValidateAction(t *testing.T) {
 		{git, "uninstall", false},
 		{git, "run", true},
 		{git, "stop", true},
+		{git, "setup", true},
 		{nginx, "run", false},
 		{nginx, "stop", false},
+		{nginx, "setup", true},
 		{nginx, "restart", true},
 		{nginx, "", true},
+		{postgres, "setup", false},
 	}
 	for _, c := range cases {
 		if err := validateAction(c.tool, c.action); (err != nil) != c.wantErr {
@@ -53,6 +57,8 @@ func TestNeedsSudo(t *testing.T) {
 		{"php", "uninstall", true},      // pacman -Rns → sudo
 		{"postgres", "run", true},       // service system → sudo
 		{"postgres", "stop", true},      // service system → sudo
+		{"postgres", "setup", true},     // inisialisasi via sudo
+		{"mariadb", "setup", true},      // inisialisasi via sudo
 		{"omniroute", "install", false}, // service-only user service
 		{"omniroute", "run", false},     // systemctl --user
 		{"omniroute", "stop", false},
@@ -68,12 +74,12 @@ func TestNeedsSudo(t *testing.T) {
 
 func TestMakeView(t *testing.T) {
 	omni := mustTool(t, "omniroute")
-	v := makeView(*omni, true, "running", "", true)
+	v := makeView(*omni, true, "running", "", true, "")
 	if v.Scope != "user" || !v.ServiceOnly || v.Pkg != "— service only —" {
 		t.Errorf("view omniroute salah: %+v", v)
 	}
 	nginx := mustTool(t, "nginx")
-	v = makeView(*nginx, false, "stopped", "1.28.1", false)
+	v = makeView(*nginx, false, "stopped", "1.28.1", false, "")
 	if v.Scope != "system" || v.ServiceOnly || v.Pkg != "nginx" || v.Svc != "stopped" {
 		t.Errorf("view nginx salah: %+v", v)
 	}

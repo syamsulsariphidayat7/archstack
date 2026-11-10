@@ -28,6 +28,11 @@ func Root(args []string) error {
 			return errors.New("[error] Gunakan: archstack uninstall <tool> [tool2 ...]")
 		}
 		return uninstallCmd(args[1:])
+	case "setup":
+		if len(args) < 2 {
+			return errors.New("[error] Gunakan: archstack setup <tool>")
+		}
+		return setupCmd(args[1])
 	case "run":
 		if len(args) < 2 {
 			return errors.New("[error] Gunakan: archstack run <tool>")
@@ -71,6 +76,7 @@ Penggunaan:
   archstack search <query>   Cari tool berdasarkan nama/package/deskripsi
   archstack install <tool> [tool2 ...]   Instal tool
   archstack uninstall <tool> [tool2 ...]  Hapus tool
+  archstack setup <tool> Setup satu kali tool yang butuh inisialisasi (postgres, mariadb)
   archstack run <tool>   Jalankan service tool
   archstack stop <tool>  Hentikan service tool
   archstack web [--addr 127.0.0.1:8090]   Web UI lokal (hanya localhost)
@@ -84,6 +90,7 @@ Contoh:
   archstack uninstall nginx
   archstack run postgres
   archstack stop postgres
+  archstack setup postgres
   archstack web
   archstack status nginx
   archstack status omniroute

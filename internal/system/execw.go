@@ -16,14 +16,30 @@ import (
 // cache kredensial sudo bila masih berlaku, dan langsung gagal — bukan
 // menggantung menunggu input — bila password memang diperlukan.
 func sudoCommand(pass, name string, args ...string) *exec.Cmd {
+	return sudoCmdOpts(pass, true, "", name, args...)
+}
+
+// sudoCmdOpts menyusun perintah sudo: password via -S bila pass terisi;
+// bila pass kosong dan nonInteractive, pakai -n (gagal cepat, tidak
+// menggantung); bila tidak nonInteractive, sudo polos (prompt di tty).
+// user mengisi sudo -u bila tidak kosong.
+func sudoCmdOpts(pass string, nonInteractive bool, user, name string, args ...string) *exec.Cmd {
+	var full []string
 	if pass != "" {
-		full := append([]string{"-S", "-p", "", name}, args...)
-		cmd := exec.Command("sudo", full...)
-		cmd.Stdin = strings.NewReader(pass + "\n")
-		return cmd
+		full = append(full, "-S", "-p", "")
+	} else if nonInteractive {
+		full = append(full, "-n")
 	}
-	full := append([]string{"-n", name}, args...)
-	return exec.Command("sudo", full...)
+	if user != "" {
+		full = append(full, "-u", user)
+	}
+	full = append(full, name)
+	full = append(full, args...)
+	cmd := exec.Command("sudo", full...)
+	if pass != "" {
+		cmd.Stdin = strings.NewReader(pass + "\n")
+	}
+	return cmd
 }
 
 func runTo(cmd *exec.Cmd, w io.Writer) error {

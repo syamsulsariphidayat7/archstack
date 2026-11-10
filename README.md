@@ -33,6 +33,7 @@ archstack install php node redis  # Instal beberapa tool sekaligus
 archstack uninstall nginx         # Hapus tool
 archstack run postgres            # Jalankan service tool
 archstack stop postgres           # Hentikan service tool
+archstack setup postgres          # Setup satu kali (initdb) sebelum run pertama
 archstack install omniroute       # Daftarkan autostart service (binary sudah ada)
 archstack status omniroute        # Detail service + linger + health
 archstack upgrade                 # Perbarui archstack
@@ -75,6 +76,15 @@ Edit `internal/registry/registry.go`, tambah entri ke `defaultTools`:
 ```
 
 Semua tool langsung install tanpa tanya.
+
+Sebagian kecil tool butuh **setup satu kali** sesudah install sebelum
+service-nya bisa start pertama kali — saat ini `postgres` (`initdb`) dan
+`mariadb` (`mariadb-install-db`). Jalankan `archstack setup <tool>` (atau
+tombol **Setup** di Web UI); perintahnya idempotent — ditandai berkas
+penanda di direktori data, jadi aman dipanggil ulang dan akan no-op.
+`run` menolak start dengan pesan yang mengarahkan ke setup bila langkah
+ini belum dilakukan. Kredensial (user/database/password) tidak dikelola
+archstack.
 
 ### Tool service-only
 

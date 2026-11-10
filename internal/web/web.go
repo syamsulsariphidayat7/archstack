@@ -40,10 +40,11 @@ type toolView struct {
 	Installed   bool   `json:"installed"`
 	Svc         string `json:"svc"` // "" | "running" | "stopped"
 	Version     string `json:"version"`
-	Unit        bool   `json:"unit"` // unit user ada (khusus service-only)
+	Unit        bool   `json:"unit"`  // unit user ada (khusus service-only)
+	Setup       string `json:"setup"` // "" | "needed" | "done"
 }
 
-func makeView(t registry.Tool, installed bool, svc, version string, unit bool) toolView {
+func makeView(t registry.Tool, installed bool, svc, version string, unit bool, setup string) toolView {
 	scope := "system"
 	if t.ServiceScope == registry.ServiceUser {
 		scope = "user"
@@ -64,6 +65,7 @@ func makeView(t registry.Tool, installed bool, svc, version string, unit bool) t
 		Svc:         svc,
 		Version:     version,
 		Unit:        unit,
+		Setup:       setup,
 	}
 }
 
@@ -87,7 +89,15 @@ func collectTools() []toolView {
 		if t.IsServiceOnly() {
 			unit = system.UserUnitExists(t.Service)
 		}
-		out = append(out, makeView(t, system.IsInstalled(t.Binary, t.Pkg), svc, versions[t.Name], unit))
+		setup := ""
+		if t.NeedsSetup() {
+			if system.SetupDone(&t) {
+				setup = "done"
+			} else {
+				setup = "needed"
+			}
+		}
+		out = append(out, makeView(t, system.IsInstalled(t.Binary, t.Pkg), svc, versions[t.Name], unit, setup))
 	}
 	return out
 }
@@ -97,6 +107,11 @@ func collectTools() []toolView {
 func validateAction(t *registry.Tool, action string) error {
 	switch action {
 	case "install", "uninstall":
+		return nil
+	case "setup":
+		if !t.NeedsSetup() {
+			return fmt.Errorf("%s tidak butuh setup", t.Name)
+		}
 		return nil
 	case "run", "stop":
 		if t.Service == "" {
@@ -117,7 +132,7 @@ func needsSudo(t *registry.Tool, action string) bool {
 	switch action {
 	case "install":
 		return t.From != registry.SourceYay
-	case "uninstall":
+	case "uninstall", "setup":
 		return true
 	case "run", "stop":
 		return t.ServiceScope != registry.ServiceUser
@@ -255,7 +270,31 @@ func runAction(t *registry.Tool, action, pass string, w io.Writer) error {
 		fmt.Fprintf(w, "[done] %s berhasil dihapus\n", t.Name)
 		return nil
 
+	case "setup":
+		if !system.IsInstalled(t.Binary, t.Pkg) {
+			return fmt.Errorf("%s belum terinstall — Install dulu sebelum Setup", t.Name)
+		}
+		if system.SetupDone(t) {
+			fmt.Fprintf(w, "[ok] %s sudah di-setup (%s/%s ada) — tidak ada yang dilakukan\n", t.Name, t.SetupDir, t.SetupMarker)
+			return nil
+		}
+		fmt.Fprintf(w, "[setup] Inisialisasi %s: %s\n", t.Name, strings.Join(t.SetupCmd, " "))
+		if err := system.RunSetupW(t, pass, w); err != nil {
+			return err
+		}
+		if !system.SetupDone(t) {
+			return fmt.Errorf("setup selesai tapi penanda %s/%s tidak ditemukan — cek output di atas", t.SetupDir, t.SetupMarker)
+		}
+		fmt.Fprintf(w, "[done] %s berhasil di-setup — sekarang bisa Run\n", t.Name)
+		if t.SetupNote != "" {
+			fmt.Fprintf(w, "[info] Berikutnya: %s\n", t.SetupNote)
+		}
+		return nil
+
 	case "run":
+		if t.NeedsSetup() && !system.SetupDone(t) {
+			return fmt.Errorf("%s perlu Setup dulu sebelum bisa jalan — klik tombol Setup", t.Name)
+		}
 		fmt.Fprintf(w, "[run] Menjalankan service %s...\n", t.Name)
 		if err := system.StartServiceForW(t, pass, w); err != nil {
 			return err

@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -292,10 +293,24 @@ func NewServer() *Server {
 func (s *Server) Handler() http.Handler { return s.mux }
 
 // Run menjalankan server di addr (pemanggil wajib memastikan addr loopback).
+// Setelah listener siap, server melapor READY ke systemd (sd_notify) dan
+// menjalankan ping watchdog — perlu bila dijalankan sebagai user service
+// `archstack-web` yang unitnya bertipe notify.
 func Run(addr string) error {
 	fmt.Printf("[info] ArchStack Web berjalan di http://%s\n", addr)
 	fmt.Printf("[info] Hanya untuk lokal — jangan diekspos ke jaringan. Ctrl+C untuk berhenti.\n")
-	return http.ListenAndServe(addr, NewServer().Handler())
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+	interval, watchdogOK := initNotify()
+	sdNotify("READY=1")
+	if watchdogOK {
+		stop := make(chan struct{})
+		defer close(stop)
+		go runWatchdog(interval, stop)
+	}
+	return http.Serve(ln, NewServer().Handler())
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

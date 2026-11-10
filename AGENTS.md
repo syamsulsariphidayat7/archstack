@@ -19,6 +19,7 @@ CLI (Go) untuk kelola development tools di Arch Linux. TUI (bubbletea) + subcomm
   - `userunit.go` — render/tulis/hapus unit user, `systemctl --user`, linger, health check
   - `execw.go` — varian streaming untuk Web UI: output ke `io.Writer`, password sudo via `sudo -S` (kosong → `sudo -n`)
 - `internal/web/` — Web UI lokal: API `/api/tools` `/api/action` `/api/job`, satu job pada satu waktu, UI ter-embed di `static/index.html`; log proses di sidebar kanan (bukan modal — modal hanya untuk password sudo)
+  - `notify.go` — `sd_notify`: server WAJIB lapor `READY=1` + ping watchdog karena unit `archstack-web` (tool service-only di registry, user service + linger) dirender `Type=notify`; no-op bila tanpa `NOTIFY_SOCKET`
 - `internal/tui/` — bubbletea UI
 - `scripts/install.sh` — one-liner dari GitHub release
 - `.github/workflows/ci.yml` — gofmt/vet/test/build otomatis di setiap push/PR

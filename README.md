@@ -51,6 +51,17 @@ UI ini setara akses root, jangan pernah diekspos ke jaringan. Aksi yang
 butuh sudo meminta password lewat modal (tidak disimpan); aksi berjalan
 satu per satu karena pacman mengunci database.
 
+**Autostart sebagai service (opsional):**
+```bash
+archstack install archstack-web   # daftarkan user service + linger
+archstack status archstack-web
+```
+Web UI jalan otomatis setelah boot (user service, tanpa sudo) dan muncul
+sebagai kartu `archstack-web` di dashboard/TUI. Server melapor `READY` +
+watchdog ke systemd (`sd_notify`) karena unitnya bertipe `notify`.
+Catatan: Stop dari dashboard mematikan dashboard itu sendiri —
+menyalakannya lagi lewat terminal: `archstack run archstack-web`.
+
 ## Menambah Tool Baru
 
 Edit `internal/registry/registry.go`, tambah entri ke `defaultTools`:

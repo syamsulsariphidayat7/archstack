@@ -160,6 +160,14 @@ var defaultTools = []Tool{
 		UnitDescription: "OmniRoute AI proxy router",
 		Desc:            "OmniRoute AI proxy router — autostart service (binary manual)",
 	},
+	{
+		Name: "archstack-web", From: SourceServiceOnly, Binary: "archstack",
+		Service: "archstack-web", ServiceScope: ServiceUser, Linger: true,
+		HealthURL:       "http://127.0.0.1:8090/api/tools",
+		UnitArgs:        []string{"web"},
+		UnitDescription: "ArchStack Web UI",
+		Desc:            "ArchStack Web UI — dashboard lokal autostart (binary archstack sendiri)",
+	},
 }
 
 func AllTools() []Tool {
